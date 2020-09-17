@@ -11,16 +11,33 @@
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 double adxM15,adxH1,adxH4,adxD1; //ADXs 
-double wd,td5,td ,tdd , tdd3,tdd4;  //TRENDs
+double td5 ,tdd4 ,tdd3,td,wd;  //M15/H1/H4/D1/W1//TRENDs
 int SRbars =56;
 double sells,buys,totalTrades,sumsell,sumbuy,sumbasket;
 extern int MAGICMA = 11;
+double freeMargin = AccountFreeMargin();
+
+int directionma; // TREND DIRECTION SUMMURY 
   
-  
 
 
 
+int TrendConclusion()
+{
+  directionma =0 ;
 
+   if(td ==1 && tdd4 ==1 && tdd3 == 1 ){
+   directionma = 1;
+   }
+   if( td ==2 && tdd4 ==2 && tdd3 ==2 ){
+   directionma = 2;
+   }
+   else {
+   directionma = 0;
+   
+   }
+   return directionma;
+}
 
 
 
@@ -32,16 +49,12 @@ void comments() // ON SCREEN PRINTS
      double eqt= AccountEquity();
      double accequity =(AccountEquity()/AccountBalance()*100);
     // Comment(StringFormat("\n\nTRADING=%G\RANGE=%G\DIGITS=%G\BID=%G\ASK=%G\EQUITY=%G\Equitypercent=%G\nTAMEIO=%G\----TARGET-PROFIT=%G\nActiveTF=%G\--Lots=%G\Lots2=%G\nAligator=%G\AligatorBUY=%G\AligatorSELL=%G\nSOUPERTREND=%G\nMATrends=%G\nM15=%G\M30=%G\H1=%G\H4=%G\D1=%G\W1=%G\nTrend-DIRECTION-=%G\nMODE=%G\n\nNextBUy=%G\NextSell=%G\nMODE1-TradeBUys=%G\TradeSells=%G\n\nNormalDST=%G\---TrendDST=%G\SR-Space=%G\n\nSELLS=%G\BUS=%G\nMAXSELLS=%G\MAXBUS=%G\nH1-ADX=%G\nM5-ADX=%G",trading,range,digits,Bid,Ask,eqt,accequity,sumbasket,targetprofit,timeframe,Lots,Lots2,alligtrend,allitradeb,allitrades,supertrend,directionma,td5,tdd,tdd4,tdd3,td,wd,direction,mode,distancebuy,distancesell,tradebuys,tradesells,distance,trenddistance,distanceSR,sells,buys,maxsells,maxbuys,adx,adxM5));
-    Comment(StringFormat("\n\nADX->M15=%G---H1=%G---H4=%G---D1=%G\nTRENDS >0=SIDE 1=UP 2=DOWN----->-M15=%G---H1=%G---H4=%G---D1=%G---W1=%G\n%G--TRADES - SELLS=%G ----BUYS=%G------------BasketSells=%G-----BasketBuys=%G----TOTAL=%G",adxM15,adxH1,adxH4,adxD1,td5,tdd4,tdd3,td,wd,totalTrades,sells,buys,sumsell,sumbuy,sumbasket));
+    Comment(StringFormat("\n\nADX->M15=%G---H1=%G---H4=%G---D1=%G\nTRENDS >0=SIDE 1=UP 2=DOWN----->-M15=%G---H1=%G---H4=%G---D1=%G---W1=%G------TrendDirection=%G\n%G--TRADES - SELLS=%G ----BUYS=%G------------BasketSells=%G-----BasketBuys=%G----TOTAL=%G---------FMARGIN=%G",adxM15,adxH1,adxH4,adxD1,td5,tdd4,tdd3,td,wd,directionma,totalTrades,sells,buys,sumsell,sumbuy,sumbasket,freeMargin));
    
    
    }
 
 
-
-
-  
-  
 int OnInit()
   {
 //--- Initializing Indicator TRAPEZIA
@@ -69,6 +82,7 @@ void OnTick()
   comments();
   DrawIndicators();
   counttrades();
+  TrendConclusion();
   }
 //+------------------------------------------------------------------+
 //| Tester function                                                  |
@@ -191,16 +205,8 @@ int CheckTrends()
   if(current_ma311 < current_ma211 && current_ma211 < current_ma111)  {
     tdd3 = 2;
     }
-          ///M5//
-    if(current_ma31 > current_ma21 && current_ma21 > current_ma11)  {
-    tdd = 1;
-    }
-    if(current_ma31 < current_ma21 && current_ma21 < current_ma11)  {
-    tdd = 2;
-    }
     
   return(td5);  //M15
-  return(tdd);  //M30
   return(tdd4); //H1
   return(tdd3); //H4
   return(td);   //D1
@@ -275,8 +281,7 @@ int indicator()
            return totalTrades;
            return sells;
            return buys;
-           
-           
+                    
     }
     
       void Chk_ADX()
@@ -287,8 +292,6 @@ int indicator()
  adxD1=iADX(NULL, PERIOD_D1, 14, PRICE_CLOSE, MODE_MAIN, 0);
  
 }
-
-
 
 
 

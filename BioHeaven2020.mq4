@@ -10,20 +10,36 @@
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
+
+extern int MAGICMA = 11;
+extern int startLot=0.10;
+extern int maxTrades = 3;
+
+
 double adxM15,adxH1,adxH4,adxD1; //ADXs 
 double td5 ,tdd4 ,tdd3,td,wd;  //M15/H1/H4/D1/W1//TRENDs Based on MAs 
 double ItrendM15, ItrendM30,ItrendH1,ItrendH4,ItrendH42 ,ItrendD1,ItrendW1; // Based on Itrend
 int SRbars =300;
 double sells,buys,totalTrades,sumsell,sumbuy,sumbasket;
-extern int MAGICMA = 11;
 double freeMargin = AccountFreeMargin();
-
 int directionma ,directionI; // TREND DIRECTION SUMMURY 
-double downzag,upzig;
+double downzag,upzig,zigzagrange,zzupFibo23,zzdownFibo23;
+
+double tradableRange,fibboTrend ;
+double FibRetrace382, FibRetrace50, FibRetrace618,FibExtend1382, FibExtend618; //RETRACE FIBBOS BASED ON RANGE 
 
 
 
 
+
+
+
+
+
+
+
+
+///CACLULATE ETNTRIES WITH ZIGZAG
 void Zags()
       {  
        int n, i;
@@ -35,27 +51,39 @@ void Zags()
      if(upzig>0) n+=1;
      i++;
    } 
+   zigzagrange= MathAbs((NormalizeDouble(((upzig - downzag)/MarketInfo(Symbol(),MODE_POINT)),MarketInfo(Symbol(),MODE_DIGITS)))/1);;
+         
+           zzupFibo23 =( DoubleToString( getFiboLevel( upzig, downzag, 23.6, 1 ) ) );
+           zzdownFibo23=( DoubleToString( getFiboLevel( upzig, downzag, 23.6, -1 ) ) );    
+      
    }
    
    
-   void Fibbos()
+   
+   //CALCULATE FIBOS 
+   double getFiboLevel( double up, double dw, double lev, int direction ){
+   double ling = up - dw;
+   double pLev = ( ling / 100 ) * lev;
+   return ( direction < 0 ) ? NormalizeDouble( up - pLev, Digits ) : NormalizeDouble( dw + pLev, Digits ) ;
+
+}
+
+
+   void Fibbos()//RETRACE FIBOS FROM INDICATOR
       {  
       
-      double tradableRange;
-
     double FibHigh=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 0, 0);
     double FibLow=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 1, 0);
     double FibTrend=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 2, 0);
+    double FibRetrace382=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 3, 0);
+    double FibRetrace50=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 4, 0);
+    double FibRetrace618=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 5, 0);
+    double FibExtend1382=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 6, 0);
+    double FibExtend618=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 7, 0);
     
-
-
- double DiffPips = MathAbs((NormalizeDouble(((FibHigh - FibLow)/MarketInfo(Symbol(),MODE_POINT)),MarketInfo(Symbol(),MODE_DIGITS)))/1);
- 
- //double DiffPips = MathAbs(NormalizeDouble(FibHigh - FibLow,Digits)/Point);
-      //  tradableRange = (FibHigh-FibLow)/Point ;
-      
-    Print(DiffPips);
-    
+    double DiffPips = MathAbs((NormalizeDouble(((FibHigh - FibLow)/MarketInfo(Symbol(),MODE_POINT)),MarketInfo(Symbol(),MODE_DIGITS)))/1);
+          tradableRange = DiffPips;  
+          fibboTrend=FibTrend;            
     }
 
      
@@ -97,7 +125,7 @@ void comments() // ON SCREEN PRINTS
      double eqt= AccountEquity();
      double accequity =(AccountEquity()/AccountBalance()*100);
     // Comment(StringFormat("\n\nTRADING=%G\RANGE=%G\DIGITS=%G\BID=%G\ASK=%G\EQUITY=%G\Equitypercent=%G\nTAMEIO=%G\----TARGET-PROFIT=%G\nActiveTF=%G\--Lots=%G\Lots2=%G\nAligator=%G\AligatorBUY=%G\AligatorSELL=%G\nSOUPERTREND=%G\nMATrends=%G\nM15=%G\M30=%G\H1=%G\H4=%G\D1=%G\W1=%G\nTrend-DIRECTION-=%G\nMODE=%G\n\nNextBUy=%G\NextSell=%G\nMODE1-TradeBUys=%G\TradeSells=%G\n\nNormalDST=%G\---TrendDST=%G\SR-Space=%G\n\nSELLS=%G\BUS=%G\nMAXSELLS=%G\MAXBUS=%G\nH1-ADX=%G\nM5-ADX=%G",trading,range,digits,Bid,Ask,eqt,accequity,sumbasket,targetprofit,timeframe,Lots,Lots2,alligtrend,allitradeb,allitrades,supertrend,directionma,td5,tdd,tdd4,tdd3,td,wd,direction,mode,distancebuy,distancesell,tradebuys,tradesells,distance,trenddistance,distanceSR,sells,buys,maxsells,maxbuys,adx,adxM5));
-     Comment(StringFormat("\n\nADX->M15=%G---H1=%G---H4=%G---D1=%G\nTRENDS >0=SIDE 1=UP 2=DOWN----->-M15=%G---H1=%G---H4=%G---D1=%G---W1=%G------TrendDirection=%G\nI-Trends > 0=SIDE 1=UP 2=DOWN----->-M15=%G---H1=%G---H4=%G---D1=%G---W1=%G------TrendDirection=%G\n\n%G--TRADES - SELLS=%G ----BUYS=%G------------BasketSells=%G-----BasketBuys=%G----TOTAL=%G---------FMARGIN=%G\nZIG%G----ZAG%G",adxM15,adxH1,adxH4,adxD1,td5,tdd4,tdd3,td,wd,directionma,ItrendM15,ItrendH1,ItrendH4,ItrendD1,ItrendW1,directionI,totalTrades,sells,buys,sumsell,sumbuy,sumbasket,freeMargin,upzig,downzag));
+     Comment(StringFormat("\n\nADX->M15=%G---H1=%G---H4=%G---D1=%G\nTRENDS >0=SIDE 1=UP 2=DOWN----->-M15=%G---H1=%G---H4=%G---D1=%G---W1=%G------TrendDirection=%G\nI-Trends > 0=SIDE 1=UP 2=DOWN----->-M15=%G---H1=%G---H4=%G---D1=%G---W1=%G------TrendDirection=%G\nFIBOTREND=%G\n\n%G--TRADES - SELLS=%G ----BUYS=%G------------BasketSells=%G-----BasketBuys=%G----TOTAL=%G---------FMARGIN=%G\nLAST LOW ENTRIE=%G----LAST HIGH ENTRIE=%G---ZIGZAG-RANGE=%G\nTRADABLE RANGE =%G",adxM15,adxH1,adxH4,adxD1,td5,tdd4,tdd3,td,wd,directionma,ItrendM15,ItrendH1,ItrendH4,ItrendD1,ItrendW1,directionI,fibboTrend,totalTrades,sells,buys,sumsell,sumbuy,sumbasket,freeMargin,upzig,downzag,zigzagrange,tradableRange));
    }
 
 

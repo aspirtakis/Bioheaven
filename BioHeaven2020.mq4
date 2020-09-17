@@ -13,15 +13,52 @@
 double adxM15,adxH1,adxH4,adxD1; //ADXs 
 double td5 ,tdd4 ,tdd3,td,wd;  //M15/H1/H4/D1/W1//TRENDs Based on MAs 
 double ItrendM15, ItrendM30,ItrendH1,ItrendH4,ItrendH42 ,ItrendD1,ItrendW1; // Based on Itrend
-int SRbars =56;
+int SRbars =300;
 double sells,buys,totalTrades,sumsell,sumbuy,sumbasket;
 extern int MAGICMA = 11;
 double freeMargin = AccountFreeMargin();
 
 int directionma ,directionI; // TREND DIRECTION SUMMURY 
-  
+double downzag,upzig;
 
 
+
+
+void Zags()
+      {  
+       int n, i;
+         i=0;
+         while(n<2)
+      {
+    if(upzig>0) downzag=upzig;
+    upzig=iCustom(NULL,PERIOD_CURRENT,"BioZagFibbo", 0, i);
+     if(upzig>0) n+=1;
+     i++;
+   } 
+   }
+   
+   
+   void Fibbos()
+      {  
+      
+      double tradableRange;
+
+    double FibHigh=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 0, 0);
+    double FibLow=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 1, 0);
+    double FibTrend=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 2, 0);
+    
+
+
+ double DiffPips = MathAbs((NormalizeDouble(((FibHigh - FibLow)/MarketInfo(Symbol(),MODE_POINT)),MarketInfo(Symbol(),MODE_DIGITS)))/1);
+ 
+ //double DiffPips = MathAbs(NormalizeDouble(FibHigh - FibLow,Digits)/Point);
+      //  tradableRange = (FibHigh-FibLow)/Point ;
+      
+    Print(DiffPips);
+    
+    }
+
+     
 
 int TrendConclusion()
 {
@@ -33,11 +70,21 @@ int TrendConclusion()
    if( td ==2 && tdd4 ==2 && tdd3 ==2 ){
    directionma = 2;
    }
-   else {
-   directionma = 0;
-   
-   }
    return directionma;
+}
+
+void ITrendConclusion()
+{
+  directionI =0;
+
+   if(ItrendW1 > 2 && ItrendD1 > 5 && ItrendH4 > 6 && ItrendH1 > 7  && ItrendM15 >15)
+  {
+   directionI = 1;
+  }
+   if( ItrendW1 < 2 && ItrendD1 < -5 && ItrendH4 < -6 && ItrendH1 < -7  && ItrendM15 < -15 )
+  {
+   directionI = 2;
+  }
 }
 
 
@@ -50,7 +97,7 @@ void comments() // ON SCREEN PRINTS
      double eqt= AccountEquity();
      double accequity =(AccountEquity()/AccountBalance()*100);
     // Comment(StringFormat("\n\nTRADING=%G\RANGE=%G\DIGITS=%G\BID=%G\ASK=%G\EQUITY=%G\Equitypercent=%G\nTAMEIO=%G\----TARGET-PROFIT=%G\nActiveTF=%G\--Lots=%G\Lots2=%G\nAligator=%G\AligatorBUY=%G\AligatorSELL=%G\nSOUPERTREND=%G\nMATrends=%G\nM15=%G\M30=%G\H1=%G\H4=%G\D1=%G\W1=%G\nTrend-DIRECTION-=%G\nMODE=%G\n\nNextBUy=%G\NextSell=%G\nMODE1-TradeBUys=%G\TradeSells=%G\n\nNormalDST=%G\---TrendDST=%G\SR-Space=%G\n\nSELLS=%G\BUS=%G\nMAXSELLS=%G\MAXBUS=%G\nH1-ADX=%G\nM5-ADX=%G",trading,range,digits,Bid,Ask,eqt,accequity,sumbasket,targetprofit,timeframe,Lots,Lots2,alligtrend,allitradeb,allitrades,supertrend,directionma,td5,tdd,tdd4,tdd3,td,wd,direction,mode,distancebuy,distancesell,tradebuys,tradesells,distance,trenddistance,distanceSR,sells,buys,maxsells,maxbuys,adx,adxM5));
-     Comment(StringFormat("\n\nADX->M15=%G---H1=%G---H4=%G---D1=%G\nTRENDS >0=SIDE 1=UP 2=DOWN----->-M15=%G---H1=%G---H4=%G---D1=%G---W1=%G------TrendDirection=%G\nI-Trends > 0=SIDE 1=UP 2=DOWN----->-M15=%G---H1=%G---H4=%G---D1=%G---W1=%G------TrendDirection=%G\n\n%G--TRADES - SELLS=%G ----BUYS=%G------------BasketSells=%G-----BasketBuys=%G----TOTAL=%G---------FMARGIN=%G",adxM15,adxH1,adxH4,adxD1,td5,tdd4,tdd3,td,wd,directionma,ItrendM15,ItrendH1,ItrendH4,ItrendD1,ItrendW1,directionI,totalTrades,sells,buys,sumsell,sumbuy,sumbasket,freeMargin));
+     Comment(StringFormat("\n\nADX->M15=%G---H1=%G---H4=%G---D1=%G\nTRENDS >0=SIDE 1=UP 2=DOWN----->-M15=%G---H1=%G---H4=%G---D1=%G---W1=%G------TrendDirection=%G\nI-Trends > 0=SIDE 1=UP 2=DOWN----->-M15=%G---H1=%G---H4=%G---D1=%G---W1=%G------TrendDirection=%G\n\n%G--TRADES - SELLS=%G ----BUYS=%G------------BasketSells=%G-----BasketBuys=%G----TOTAL=%G---------FMARGIN=%G\nZIG%G----ZAG%G",adxM15,adxH1,adxH4,adxD1,td5,tdd4,tdd3,td,wd,directionma,ItrendM15,ItrendH1,ItrendH4,ItrendD1,ItrendW1,directionI,totalTrades,sells,buys,sumsell,sumbuy,sumbasket,freeMargin,upzig,downzag));
    }
 
 
@@ -83,6 +130,8 @@ void OnTick()
   counttrades();
   TrendConclusion();
   iTrend();
+  Zags();
+  Fibbos();
   }
 //+------------------------------------------------------------------+
 //| Tester function                                                  |
@@ -141,42 +190,26 @@ int CheckTrends()
    double  current_ma1, current_ma2, current_ma3;
    double  current_wa1, current_wa2, current_wa3;
    double  current_ma15, current_ma25, current_ma35;
-   double  current_ma11, current_ma21, current_ma31 ;
    double  current_ma111, current_ma211, current_ma311;
    double  current_d1, current_d2, current_d3;
-   
-   //M15 TDd
-   current_ma15 = iMA(NULL,PERIOD_M15,300,0,MODE_SMA,PRICE_CLOSE,0);  
-   current_ma25 = iMA(NULL,PERIOD_M15,150,0,MODE_SMA,PRICE_CLOSE,0);  
-   current_ma35 = iMA(NULL,PERIOD_M15,80,0,MODE_SMA,PRICE_CLOSE,0);
-   
-   ///H1 TD3
-   current_d1 = iMA(NULL,PERIOD_H1,200,0,MODE_EMA,PRICE_MEDIAN,0);  
-   current_d2 = iMA(NULL,PERIOD_H1,100,0,MODE_EMA,PRICE_MEDIAN,0);  
-   current_d3 = iMA(NULL,PERIOD_H1,50,0,MODE_EMA,PRICE_MEDIAN,0);
-   //H4
-   current_ma111 = iMA(NULL,PERIOD_H4,100,0,MODE_EMA,PRICE_CLOSE,0);  
-   current_ma211 = iMA(NULL,PERIOD_H4,70,0,MODE_SMA,PRICE_CLOSE,0);  
-   current_ma311 = iMA(NULL,PERIOD_H4,30,0,MODE_SMA,PRICE_CLOSE,0);
-   
+
    //D1// Td
    current_ma1 = iMA(NULL,PERIOD_D1,50,0,MODE_EMA,PRICE_CLOSE,0);  
    current_ma2 = iMA(NULL,PERIOD_D1,25,0,MODE_SMA,PRICE_CLOSE,0);  
    current_ma3 = iMA(NULL,PERIOD_D1,10,0,MODE_SMA,PRICE_CLOSE,0);
-   
-      //w1// Td
-   current_wa1 = iMA(NULL,PERIOD_W1,25,0,MODE_EMA,PRICE_MEDIAN,0);  
-   current_wa2 = iMA(NULL,PERIOD_W1,10,0,MODE_SMA,PRICE_MEDIAN,0);  
-   current_wa3 = iMA(NULL,PERIOD_W1,2,0,MODE_SMA,PRICE_MEDIAN,0);
-
-     //D1///
     if(current_ma3 > current_ma2 && current_ma2 > current_ma1)  {
     td = 1;
     }
     if(current_ma3 < current_ma2 && current_ma2 < current_ma1)  {
     td = 2;
     }
-         //W1///
+    
+    
+         
+    //w1// wd
+   current_wa1 = iMA(NULL,PERIOD_W1,25,0,MODE_EMA,PRICE_MEDIAN,0);  
+   current_wa2 = iMA(NULL,PERIOD_W1,10,0,MODE_SMA,PRICE_MEDIAN,0);  
+   current_wa3 = iMA(NULL,PERIOD_W1,2,0,MODE_SMA,PRICE_MEDIAN,0);
     if(current_wa3 > current_wa2 && current_wa2 > current_wa1)  {
     wd = 1;
     }
@@ -184,21 +217,36 @@ int CheckTrends()
     wd = 2;
     }
     
-    //M15///  
+    
+   
+   //M15 td5
+   current_ma15 = iMA(NULL,PERIOD_M15,300,0,MODE_SMA,PRICE_CLOSE,0);  
+   current_ma25 = iMA(NULL,PERIOD_M15,150,0,MODE_SMA,PRICE_CLOSE,0);  
+   current_ma35 = iMA(NULL,PERIOD_M15,80,0,MODE_SMA,PRICE_CLOSE,0);
     if(current_ma35 > current_ma25 && current_ma25 > current_ma15)  {
     td5 = 1;
     }
     if(current_ma35 < current_ma25 && current_ma25 < current_ma15) {
     td5 = 2;
      }
-   //H1//
+     
+     
+   ///H1 TD3
+   current_d1 = iMA(NULL,PERIOD_H1,200,0,MODE_EMA,PRICE_MEDIAN,0);  
+   current_d2 = iMA(NULL,PERIOD_H1,100,0,MODE_EMA,PRICE_MEDIAN,0);  
+   current_d3 = iMA(NULL,PERIOD_H1,50,0,MODE_EMA,PRICE_MEDIAN,0);
    if(current_d3 > current_d2 && current_d2 > current_d1)  {
     tdd4 = 1;
    }
    if(current_d3 < current_d2 && current_d2 < current_d1)  {
     tdd4 = 2;
    }
+    
+    
     //H4///
+   current_ma111 = iMA(NULL,PERIOD_H4,100,0,MODE_EMA,PRICE_CLOSE,0);  
+   current_ma211 = iMA(NULL,PERIOD_H4,70,0,MODE_SMA,PRICE_CLOSE,0);  
+   current_ma311 = iMA(NULL,PERIOD_H4,30,0,MODE_SMA,PRICE_CLOSE,0);
   if(current_ma311 > current_ma211 && current_ma211 > current_ma111)  {
     tdd3 = 1;
     }

@@ -11,13 +11,14 @@
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 double adxM15,adxH1,adxH4,adxD1; //ADXs 
-double td5 ,tdd4 ,tdd3,td,wd;  //M15/H1/H4/D1/W1//TRENDs
+double td5 ,tdd4 ,tdd3,td,wd;  //M15/H1/H4/D1/W1//TRENDs Based on MAs 
+double ItrendM15, ItrendM30,ItrendH1,ItrendH4,ItrendH42 ,ItrendD1,ItrendW1; // Based on Itrend
 int SRbars =56;
 double sells,buys,totalTrades,sumsell,sumbuy,sumbasket;
 extern int MAGICMA = 11;
 double freeMargin = AccountFreeMargin();
 
-int directionma; // TREND DIRECTION SUMMURY 
+int directionma ,directionI; // TREND DIRECTION SUMMURY 
   
 
 
@@ -49,9 +50,7 @@ void comments() // ON SCREEN PRINTS
      double eqt= AccountEquity();
      double accequity =(AccountEquity()/AccountBalance()*100);
     // Comment(StringFormat("\n\nTRADING=%G\RANGE=%G\DIGITS=%G\BID=%G\ASK=%G\EQUITY=%G\Equitypercent=%G\nTAMEIO=%G\----TARGET-PROFIT=%G\nActiveTF=%G\--Lots=%G\Lots2=%G\nAligator=%G\AligatorBUY=%G\AligatorSELL=%G\nSOUPERTREND=%G\nMATrends=%G\nM15=%G\M30=%G\H1=%G\H4=%G\D1=%G\W1=%G\nTrend-DIRECTION-=%G\nMODE=%G\n\nNextBUy=%G\NextSell=%G\nMODE1-TradeBUys=%G\TradeSells=%G\n\nNormalDST=%G\---TrendDST=%G\SR-Space=%G\n\nSELLS=%G\BUS=%G\nMAXSELLS=%G\MAXBUS=%G\nH1-ADX=%G\nM5-ADX=%G",trading,range,digits,Bid,Ask,eqt,accequity,sumbasket,targetprofit,timeframe,Lots,Lots2,alligtrend,allitradeb,allitrades,supertrend,directionma,td5,tdd,tdd4,tdd3,td,wd,direction,mode,distancebuy,distancesell,tradebuys,tradesells,distance,trenddistance,distanceSR,sells,buys,maxsells,maxbuys,adx,adxM5));
-    Comment(StringFormat("\n\nADX->M15=%G---H1=%G---H4=%G---D1=%G\nTRENDS >0=SIDE 1=UP 2=DOWN----->-M15=%G---H1=%G---H4=%G---D1=%G---W1=%G------TrendDirection=%G\n%G--TRADES - SELLS=%G ----BUYS=%G------------BasketSells=%G-----BasketBuys=%G----TOTAL=%G---------FMARGIN=%G",adxM15,adxH1,adxH4,adxD1,td5,tdd4,tdd3,td,wd,directionma,totalTrades,sells,buys,sumsell,sumbuy,sumbasket,freeMargin));
-   
-   
+     Comment(StringFormat("\n\nADX->M15=%G---H1=%G---H4=%G---D1=%G\nTRENDS >0=SIDE 1=UP 2=DOWN----->-M15=%G---H1=%G---H4=%G---D1=%G---W1=%G------TrendDirection=%G\nI-Trends > 0=SIDE 1=UP 2=DOWN----->-M15=%G---H1=%G---H4=%G---D1=%G---W1=%G------TrendDirection=%G\n\n%G--TRADES - SELLS=%G ----BUYS=%G------------BasketSells=%G-----BasketBuys=%G----TOTAL=%G---------FMARGIN=%G",adxM15,adxH1,adxH4,adxD1,td5,tdd4,tdd3,td,wd,directionma,ItrendM15,ItrendH1,ItrendH4,ItrendD1,ItrendW1,directionI,totalTrades,sells,buys,sumsell,sumbuy,sumbasket,freeMargin));
    }
 
 
@@ -83,6 +82,7 @@ void OnTick()
   DrawIndicators();
   counttrades();
   TrendConclusion();
+  iTrend();
   }
 //+------------------------------------------------------------------+
 //| Tester function                                                  |
@@ -305,3 +305,32 @@ RefreshRates();
   ObjectSet("ResistanceD1",OBJPROP_PRICE1,Resistance(PERIOD_D1));
      
 }
+
+ void iTrend()
+   {
+  RefreshRates();
+  directionI =0;
+  double itM15,itM151,itH1,itH11,itH4,itH41,i,itD1,itD11,itW1,itW11;
+  
+  itM15=iCustom(NULL,0,"iTrend",0,0,0,20,2,13,300,0,0);
+  itM151=iCustom(NULL,0,"iTrend",0,0,0,20,2,13,300,1,0);
+  ItrendM15 = itM15 + itM151*1000;
+  
+  itH1 =iCustom(NULL,PERIOD_H1,"iTrend",0,0,0,20,2,13,300,0,0);
+  itH11 =iCustom(NULL,PERIOD_H1,"iTrend",0,0,0,20,2,13,300,1,0);
+  ItrendH1 = itH1 + itH11*1000;
+  
+  itH4 =iCustom(NULL,PERIOD_H4,"iTrend",0,0,0,20,2,13,300,0,0);
+  itH41 =iCustom(NULL,PERIOD_H4,"iTrend",0,0,0,20,2,13,300,1,0);
+  ItrendH4 = itH4 + itH41*1000;
+  
+  itD1 =iCustom(NULL,PERIOD_D1,"iTrend",0,0,0,20,2,13,300,0,0);
+  itD11 =iCustom(NULL,PERIOD_D1,"iTrend",0,0,0,20,2,13,300,1,0);
+  ItrendD1 = itD1 + itD11*1000;
+
+  itW1 =iCustom(NULL,PERIOD_W1,"iTrend",0,0,0,20,2,13,300,0,0);
+  itW11 =iCustom(NULL,PERIOD_W1,"iTrend",0,0,0,20,2,13,300,1,0);
+  ItrendW1 = itW1 + itW11*1000;
+  
+ }
+

@@ -12,8 +12,16 @@
 //+------------------------------------------------------------------+
 
 extern int MAGICMA = 11;
-extern int startLot=0.10;
+extern double startLot= 0.10;
 extern int maxTrades = 3;
+extern bool trading = true;
+extern int mode = 0;
+extern bool tradesides =true;
+extern bool tradetrends =true;
+double maxbuys = 2;
+double  maxsells= 2;
+double Lots = startLot;
+
 
 
 double adxM15,adxH1,adxH4,adxD1; //ADXs 
@@ -26,11 +34,73 @@ int directionma ,directionI; // TREND DIRECTION SUMMURY
 double downzag,upzig,zigzagrange,zzupFibo23,zzdownFibo23;
 
 double tradableRange,fibboTrend ;
-double FibRetrace382, FibRetrace50, FibRetrace618,FibExtend1382, FibExtend618; //RETRACE FIBBOS BASED ON RANGE 
+double FibHigh,FibLow,FibRetrace382, FibRetrace50, FibRetrace618,FibExtend1382, FibExtend618; //RETRACE FIBBOS BASED ON RANGE 
 
 
 
 
+void CheckForOpen()
+  {
+if(trading == true){
+  if(Volume[0]>1) return;
+   int    res;
+   
+   ////////////////////////MODE 0 PLAGIO ///////////////
+  if(mode == 0 && tradesides == true){ 
+  double distancebuy = tradableRange / maxTrades ;
+    
+
+     if( buys < maxbuys && upzig > downzag && buys == 0 && FibLow > Ask)
+     {
+      res=OrderSend(Symbol(),OP_BUY,Lots,Ask,3,0,0,"MODE-0-1B",MAGICMA,0,Blue);
+     return;
+     }
+     
+     
+          if( sells < maxsells && upzig < downzag && sells == 0 && FibHigh > Ask)
+     {
+      res=OrderSend(Symbol(),OP_SELL,Lots,Ask,3,0,0,"MODE-0-1B",MAGICMA,0,Red);
+     return;
+     }
+
+    
+
+     }
+
+     }
+  }
+  
+  void CloseOrders()
+   {
+   
+       for(int i=0;i<OrdersTotal();i++)
+        {
+         if(OrderSelect(i,SELECT_BY_POS,MODE_TRADES)==false) break;
+         if(OrderSymbol()==Symbol() ) {
+            if(OrderType()==OP_BUY ) {
+  
+            
+            if(Ask > FibHigh){
+               OrderClose(OrderTicket(),OrderLots(),Bid,3,Blue);
+            }
+            
+            }
+            
+                        if(OrderType()==OP_SELL ) {
+  
+            
+            if(Ask < FibLow){
+               OrderClose(OrderTicket(),OrderLots(),Bid,3,Blue);
+            }
+            
+            }
+            
+           } 
+           
+
+           
+  }
+  }
 
 
 
@@ -72,14 +142,14 @@ void Zags()
    void Fibbos()//RETRACE FIBOS FROM INDICATOR
       {  
       
-    double FibHigh=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 0, 0);
-    double FibLow=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 1, 0);
-    double FibTrend=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 2, 0);
-    double FibRetrace382=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 3, 0);
-    double FibRetrace50=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 4, 0);
-    double FibRetrace618=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 5, 0);
-    double FibExtend1382=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 6, 0);
-    double FibExtend618=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 7, 0);
+ FibHigh=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 0, 0);
+  FibLow=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 1, 0);
+   double FibTrend=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 2, 0);
+ FibRetrace382=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 3, 0);
+ FibRetrace50=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 4, 0);
+    FibRetrace618=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 5, 0);
+   FibExtend1382=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 6, 0);
+ FibExtend618=iCustom(NULL,PERIOD_CURRENT,"IH_Fibo", 7, 0);
     
     double DiffPips = MathAbs((NormalizeDouble(((FibHigh - FibLow)/MarketInfo(Symbol(),MODE_POINT)),MarketInfo(Symbol(),MODE_DIGITS)))/1);
           tradableRange = DiffPips;  
@@ -151,15 +221,17 @@ void OnDeinit(const int reason)
 //+------------------------------------------------------------------+
 void OnTick()
   {
-  Chk_ADX();
-  CheckTrends();
-  comments();
-  DrawIndicators();
+ // Chk_ADX();
+ // CheckTrends();
+ // comments();
+ // DrawIndicators();
   counttrades();
-  TrendConclusion();
-  iTrend();
+ //TrendConclusion();
+ // iTrend();
   Zags();
   Fibbos();
+  CheckForOpen();
+  CloseOrders();
   }
 //+------------------------------------------------------------------+
 //| Tester function                                                  |
@@ -359,6 +431,10 @@ int indicator()
            return buys;
                     
     }
+    
+    
+    
+    
     
       void Chk_ADX()
 {

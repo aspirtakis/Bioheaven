@@ -555,8 +555,7 @@ void CloseOrders()
          closesell();
            }
       }
-   
-    
+  
            
   }
   

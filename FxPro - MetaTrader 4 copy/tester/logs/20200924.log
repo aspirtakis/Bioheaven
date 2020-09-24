@@ -1,0 +1,14 @@
+0	19:45:50.021	Expert aaattt EURUSD,H1: loaded successfully
+0	19:45:50.136	TestGenerator: current spread 17 used
+2	19:45:59.163	2020.05.01 00:00:00  aaattt inputs: MAGICMA=993010; distance=70; Lots=0.01; maxorders=5; 
+2	19:45:59.225	2020.05.01 00:00:00  aaattt EURUSD,H1: open #1 sell 0.01 EURUSD at 1.09506 ok
+3	19:46:14.034	2020.05.01 00:14:25  Tester: stop button pressed
+2	19:46:14.044	2020.05.01 00:14:25  Tester: order #1 is closed
+0	19:46:14.044	EURUSD,H1: 223 tick events (1 bars, 8760870 bar states) processed in 0:00:14.881 (total time 0:00:23.926)
+0	19:46:21.766	Expert aaattt EURUSD,H1: removed
+0	19:46:21.780	Expert Moving Average EURUSD,H1: loaded successfully
+0	19:46:21.904	TestGenerator: current spread 17 used
+2	19:46:40.270	2020.05.01 00:00:00  Moving Average inputs: Lots=0.1; MaximumRisk=0.02; DecreaseFactor=3; MovingPeriod=12; MovingShift=6; 
+3	19:46:45.222	2020.05.01 00:05:31  Tester: stop button pressed
+0	19:46:45.248	EURUSD,H1: 75 tick events (1 bars, 8760870 bar states) processed in 0:00:04.978 (total time 0:00:23.378)
+0	19:46:50.341	Expert Moving Average EURUSD,H1: removed
